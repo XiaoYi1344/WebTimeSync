@@ -96,7 +96,7 @@ export const metadata: Metadata = {
     apple: "/sync.png",
   },
 
-  manifest: "/manifest.webmanifest",
+  // manifest: "/manifest.webmanifest",
 };
 
 export const viewport: Viewport = {

@@ -15,7 +15,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useFaceWebSocket } from "@/hooks/useFaceWebsocket";
+// import { useFaceWebSocket } from "@/hooks/useFaceWebsocket";
 
 type CameraStatus = "init" | "ready" | "scanning" | "error";
 
@@ -38,12 +38,12 @@ export default function FacePage() {
   const streamRef = useRef<MediaStream | null>(null);
 
   // WEBSOCKET
-  const {
-    status: wsStatus,
-    lastMessage,
-    start: startFaceScan,
-    stop: stopFaceScan,
-  } = useFaceWebSocket();
+  // const {
+  //   status: wsStatus,
+  //   lastMessage,
+  //   start: startFaceScan,
+  //   stop: stopFaceScan,
+  // } = useFaceWebSocket();
 
   // ============================================================
   // UPDATE CLOCK
@@ -60,52 +60,52 @@ export default function FacePage() {
   }, []);
 
   // KẾT QUẢ
-  useEffect(() => {
-    if (!lastMessage) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!lastMessage) {
+  //     return;
+  //   }
 
-    switch (lastMessage.type) {
-      case "face.processing":
-        setCameraStatus("scanning");
-        break;
+  //   switch (lastMessage.type) {
+  //     case "face.processing":
+  //       setCameraStatus("scanning");
+  //       break;
 
-      case "face.recognized":
-        console.log("Employee:", lastMessage.employee);
+  //     case "face.recognized":
+  //       console.log("Employee:", lastMessage.employee);
 
-        console.log("Confidence:", lastMessage.confidence);
+  //       console.log("Confidence:", lastMessage.confidence);
 
-        break;
+  //       break;
 
-      case "attendance.success":
-        setRecognitionStatus("success");
-        setCameraStatus("ready");
+  //     case "attendance.success":
+  //       setRecognitionStatus("success");
+  //       setCameraStatus("ready");
 
-        setTimeout(() => {
-          setRecognitionStatus("idle");
-        }, 3000);
+  //       setTimeout(() => {
+  //         setRecognitionStatus("idle");
+  //       }, 3000);
 
-        break;
+  //       break;
 
-      case "face.registered":
-        setRecognitionStatus("success");
-        setCameraStatus("ready");
+  //     case "face.registered":
+  //       setRecognitionStatus("success");
+  //       setCameraStatus("ready");
 
-        setTimeout(() => {
-          setRecognitionStatus("idle");
-        }, 3000);
+  //       setTimeout(() => {
+  //         setRecognitionStatus("idle");
+  //       }, 3000);
 
-        break;
+  //       break;
 
-      case "face.error":
-        console.error(lastMessage.code, lastMessage.message);
+  //     case "face.error":
+  //       console.error(lastMessage.code, lastMessage.message);
 
-        setRecognitionStatus("error");
-        setCameraStatus("ready");
+  //       setRecognitionStatus("error");
+  //       setCameraStatus("ready");
 
-        break;
-    }
-  }, [lastMessage]);
+  //       break;
+  //   }
+  // }, [lastMessage]);
 
   // ============================================================
   // START CAMERA
@@ -168,43 +168,43 @@ export default function FacePage() {
   // HANDLE FACE RECOGNITION
   // ============================================================
 
-  // const handleAction = () => {
-  //   if (cameraStatus !== "ready") return;
+  const handleAction = () => {
+    if (cameraStatus !== "ready") return;
 
-  //   // Reset recognition state
-  //   setRecognitionStatus("idle");
-
-  //   // Start scanning
-  //   setCameraStatus("scanning");
-
-  //   // Simulate AI processing
-  //   setTimeout(() => {
-  //     const success = Math.random() > 0.1;
-
-  //     if (success) {
-  //       setRecognitionStatus("success");
-  //     } else {
-  //       setRecognitionStatus("error");
-  //     }
-
-  //     // Camera is ready again
-  //     setCameraStatus("ready");
-
-  //     // Hide result after 3 seconds
-  //     setTimeout(() => {
-  //       setRecognitionStatus("idle");
-  //     }, 3000);
-  //   }, 2000);
-  // };
-  const handleAction = async () => {
-    if (cameraStatus !== "ready" || !videoRef.current) {
-      return;
-    }
-
+    // Reset recognition state
     setRecognitionStatus("idle");
 
-    await startFaceScan(videoRef.current, mode);
+    // Start scanning
+    setCameraStatus("scanning");
+
+    // Simulate AI processing
+    setTimeout(() => {
+      const success = Math.random() > 0.1;
+
+      if (success) {
+        setRecognitionStatus("success");
+      } else {
+        setRecognitionStatus("error");
+      }
+
+      // Camera is ready again
+      setCameraStatus("ready");
+
+      // Hide result after 3 seconds
+      setTimeout(() => {
+        setRecognitionStatus("idle");
+      }, 3000);
+    }, 2000);
   };
+  // const handleAction = async () => {
+  //   if (cameraStatus !== "ready" || !videoRef.current) {
+  //     return;
+  //   }
+
+  //   setRecognitionStatus("idle");
+
+  //   await startFaceScan(videoRef.current, mode);
+  // };
 
   // ============================================================
   // RETRY CAMERA
