@@ -22,6 +22,48 @@ export interface FaceImagesResponse {
  *
  * Field FormData: files
  */
+// export async function uploadEmployeeFaceImages(
+//   employeeId: number | string,
+//   files: File[],
+//   config?: AxiosRequestConfig,
+// ): Promise<EmployeeFaceImage[]> {
+//   if (files.length === 0) {
+//     throw new Error("Vui lòng chọn ít nhất 1 ảnh.");
+//   }
+
+//   if (files.length > 9) {
+//     throw new Error("Chỉ được upload tối đa 9 ảnh.");
+//   }
+
+//   const formData = new FormData();
+
+//   files.forEach((file) => {
+//     formData.append("files", file);
+//   });
+
+//   const token = getAccessToken();
+
+//   const response = await apiPost<EmployeeFaceImage[]>(
+//     API,
+//     `/admin/employee/face-images/${employeeId}`,
+//     formData,
+//     {
+//       ...config,
+//       headers: {
+//         ...(config?.headers ?? {}),
+//         ...(token
+//           ? {
+//               Authorization: `Bearer ${token}`,
+//             }
+//           : {}),
+//         // Không set Content-Type.
+//         // Axios sẽ tự thêm multipart/form-data + boundary.
+//       },
+//     },
+//   );
+
+//   return response;
+// }
 export async function uploadEmployeeFaceImages(
   employeeId: number | string,
   files: File[],
@@ -31,15 +73,15 @@ export async function uploadEmployeeFaceImages(
     throw new Error("Vui lòng chọn ít nhất 1 ảnh.");
   }
 
-  if (files.length > 9) {
-    throw new Error("Chỉ được upload tối đa 9 ảnh.");
+  if (files.length > 10) {
+    throw new Error("Chỉ được upload đủ 10 ảnh.");
   }
 
   const formData = new FormData();
 
-  files.forEach((file) => {
-    formData.append("files", file);
-  });
+  for (const file of files) {
+    formData.append("files", file, file.name);
+  }
 
   const token = getAccessToken();
 
@@ -49,15 +91,17 @@ export async function uploadEmployeeFaceImages(
     formData,
     {
       ...config,
+
       headers: {
         ...(config?.headers ?? {}),
+
         ...(token
           ? {
               Authorization: `Bearer ${token}`,
             }
           : {}),
-        // Không set Content-Type.
-        // Axios sẽ tự thêm multipart/form-data + boundary.
+
+        // KHÔNG SET Content-Type
       },
     },
   );

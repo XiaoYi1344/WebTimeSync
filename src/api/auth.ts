@@ -127,7 +127,7 @@
 //       {},
 //       {
 //         ...config,
-//         withCredentials: true,
+//         withCredentials: false,
 //       },
 //     );
 //   } finally {
@@ -142,7 +142,7 @@
 //     "/admin/auth/refresh-token",
 //     {},
 //     {
-//       withCredentials: true,
+//       withCredentials: false,
 //     },
 //   );
 
@@ -254,17 +254,12 @@ export function getCurrentEmployee(): Employee | null {
   }
 }
 
-export function setCurrentEmployee(
-  employee: Employee,
-): void {
+export function setCurrentEmployee(employee: Employee): void {
   if (typeof window === "undefined") {
     return;
   }
 
-  localStorage.setItem(
-    EMPLOYEE_KEY,
-    JSON.stringify(employee),
-  );
+  localStorage.setItem(EMPLOYEE_KEY, JSON.stringify(employee));
 }
 
 export function removeCurrentEmployee(): void {
@@ -283,15 +278,10 @@ export async function login(
   data: LoginRequest,
   config?: AxiosRequestConfig,
 ): Promise<LoginResponse> {
-  const response = await apiPost<LoginResponse>(
-    API,
-    "/auth/login",
-    data,
-    {
-      ...config,
-      withCredentials: true,
-    },
-  );
+  const response = await apiPost<LoginResponse>(API, "/auth/login", data, {
+    ...config,
+    withCredentials: false,
+  });
 
   setAccessToken(response.accessToken);
 
@@ -304,9 +294,7 @@ export async function login(
    LOGOUT
 ========================================================= */
 
-export async function logout(
-  config?: AxiosRequestConfig,
-): Promise<void> {
+export async function logout(config?: AxiosRequestConfig): Promise<void> {
   try {
     await apiPost(
       API,
@@ -314,7 +302,7 @@ export async function logout(
       {},
       {
         ...config,
-        withCredentials: true,
+        withCredentials: false,
       },
     );
   } finally {
@@ -328,15 +316,14 @@ export async function logout(
 ========================================================= */
 
 export async function refreshToken(): Promise<RefreshResponse> {
-  const response =
-    await apiPost<RefreshResponse>(
-      API,
-      "/admin/auth/refresh-token",
-      {},
-      {
-        withCredentials: true,
-      },
-    );
+  const response = await apiPost<RefreshResponse>(
+    API,
+    "/admin/auth/refresh-token",
+    {},
+    {
+      withCredentials: false,
+    },
+  );
 
   if (response.accessToken) {
     setAccessToken(response.accessToken);

@@ -9,7 +9,7 @@
 // export const API = axios.create({
 //   baseURL: baseURL || "",
 //   timeout: 20_000,
-//   withCredentials: true,
+//   withCredentials: false,
 //   headers: {
 //     Accept: "application/json",
 //     "Content-Type": "application/json",
@@ -74,7 +74,7 @@
 //           "/admin/auth/refresh-token",
 //           {},
 //           {
-//             withCredentials: true,
+//             withCredentials: false,
 //           },
 //         ).finally(() => {
 //           isRefreshing = false;
@@ -94,69 +94,51 @@
 
 // export default API;
 
-
-
 import axios, {
   type AxiosError,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from "axios";
 
-const baseURL =
-  process.env.NEXT_PUBLIC_API_ENDPOINT;
+const baseURL = process.env.NEXT_PUBLIC_API_ENDPOINT;
 
 if (!baseURL) {
-  console.warn(
-    "Missing NEXT_PUBLIC_API_ENDPOINT",
-  );
+  console.warn("Missing NEXT_PUBLIC_API_ENDPOINT");
 }
 
 export const API = axios.create({
   baseURL: baseURL || "",
   timeout: 20_000,
-  withCredentials: true,
+  withCredentials: false,
   headers: {
     Accept: "application/json",
-    "Content-Type": "application/json",
+    // "Content-Type": "application/json",
   },
 });
 
-type RetryRequestConfig =
-  InternalAxiosRequestConfig & {
-    _retry?: boolean;
-  };
+type RetryRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
+};
 
 let isRefreshing = false;
 
-let refreshPromise:
-  | Promise<AxiosResponse>
-  | null = null;
+let refreshPromise: Promise<AxiosResponse> | null = null;
 
 function redirectToSignIn() {
   if (typeof window === "undefined") {
     return;
   }
 
-  const pathname =
-    window.location.pathname ||
-    "/dashboard";
+  const pathname = window.location.pathname || "/dashboard";
 
-  if (
-    pathname.startsWith("/sign-in")
-  ) {
+  if (pathname.startsWith("/sign-in")) {
     return;
   }
 
-  window.location.replace(
-    `/sign-in?next=${encodeURIComponent(
-      pathname,
-    )}`,
-  );
+  window.location.replace(`/sign-in?next=${encodeURIComponent(pathname)}`);
 }
 
-function isAuthEndpoint(
-  url?: string,
-): boolean {
+function isAuthEndpoint(url?: string): boolean {
   if (!url) {
     return false;
   }
@@ -173,23 +155,16 @@ API.interceptors.response.use(
     return response;
   },
 
-  async (
-    error: AxiosError,
-  ) => {
-    const originalRequest =
-      error.config as
-        | RetryRequestConfig
-        | undefined;
+  async (error: AxiosError) => {
+    const originalRequest = error.config as RetryRequestConfig | undefined;
 
     if (!originalRequest) {
       return Promise.reject(error);
     }
 
-    const status =
-      error.response?.status;
+    const status = error.response?.status;
 
-    const url =
-      originalRequest.url;
+    const url = originalRequest.url;
 
     /**
      * Chỉ xử lý 401.
@@ -220,7 +195,7 @@ API.interceptors.response.use(
           "/admin/auth/refresh-token",
           {},
           {
-            withCredentials: true,
+            withCredentials: false,
           },
         ).finally(() => {
           isRefreshing = false;
@@ -242,9 +217,7 @@ API.interceptors.response.use(
        */
       redirectToSignIn();
 
-      return Promise.reject(
-        refreshError,
-      );
+      return Promise.reject(refreshError);
     }
   },
 );

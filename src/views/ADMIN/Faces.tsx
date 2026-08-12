@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Search,
@@ -31,9 +26,7 @@ import { useQueries } from "@tanstack/react-query";
 
 import { cn } from "@/lib/utils";
 
-import {
-  devices,
-} from "@/@mockdata/employee.mock";
+import { devices } from "@/@mockdata/employee.mock";
 
 import {
   useEmployees,
@@ -42,10 +35,7 @@ import {
   employeeKeys,
 } from "@/hooks/useEmployee";
 
-import {
-  getEmployeeFaceImages,
-  type EmployeeFaceImage,
-} from "@/api/file";
+import { getEmployeeFaceImages, type EmployeeFaceImage } from "@/api/file";
 
 import type { Employee } from "@/api/auth";
 import toast from "react-hot-toast";
@@ -56,9 +46,7 @@ import toast from "react-hot-toast";
 
 type ModalMode = "register" | "update" | "info" | null;
 
-type FaceStatus =
-  | "registered"
-  | "not_registered";
+type FaceStatus = "registered" | "not_registered";
 
 type FaceRecord = {
   employee: Employee;
@@ -79,7 +67,7 @@ type FaceForm = {
    CONSTANTS
 ========================================================= */
 
-const MAX_FACE_IMAGES = 9;
+const MAX_FACE_IMAGES = 10;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const emptyForm: FaceForm = {
@@ -97,11 +85,7 @@ const inputClass =
 ========================================================= */
 
 function getEmployeeName(employee: Employee) {
-  return (
-    (employee as any).fullName ??
-    (employee as any).name ??
-    "Nhân viên"
-  );
+  return (employee as any).fullname ?? (employee as any).name ?? "Nhân viên";
 }
 
 function getEmployeeCode(employee: Employee) {
@@ -112,12 +96,12 @@ function getEmployeeCode(employee: Employee) {
   );
 }
 
+function getEmployeeDepartment(employee: Employee) {
+  return (employee as any).departmentName ?? "Chưa có phòng ban";
+}
+
 function getEmployeeAvatar(employee: Employee) {
-  return (
-    (employee as any).avatar ??
-    (employee as any).avatarUrl ??
-    ""
-  );
+  return (employee as any).avatar ?? (employee as any).avatarUrl ?? "";
 }
 
 /* =========================================================
@@ -141,35 +125,27 @@ export default function Faces() {
   ======================================================= */
 
   const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] =
-    useState<"all" | FaceStatus>("all");
+  const [filterStatus, setFilterStatus] = useState<"all" | FaceStatus>("all");
 
-  const [modalMode, setModalMode] =
-    useState<ModalMode>(null);
+  const [modalMode, setModalMode] = useState<ModalMode>(null);
 
-  const [selectedEmployeeId, setSelectedEmployeeId] =
-    useState<number | string | null>(null);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<
+    number | string | null
+  >(null);
 
-  const [form, setForm] =
-    useState<FaceForm>(emptyForm);
+  const [form, setForm] = useState<FaceForm>(emptyForm);
 
-  const [isCameraOpen, setIsCameraOpen] =
-    useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
-  const [submitError, setSubmitError] =
-    useState("");
+  const [submitError, setSubmitError] = useState("");
 
-  const [openMenuId, setOpenMenuId] =
-    useState<number | string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<number | string | null>(null);
 
-  const videoRef =
-    useRef<HTMLVideoElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const streamRef =
-    useRef<MediaStream | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  const fileInputRef =
-    useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   /* =======================================================
      FACE IMAGE QUERIES
@@ -181,12 +157,9 @@ export default function Faces() {
   const faceQueries = useQueries({
     queries: employees.map((employee) => ({
       queryKey: employeeKeys.faceImages(employee.id),
-      queryFn: () =>
-        getEmployeeFaceImages(employee.id),
+      queryFn: () => getEmployeeFaceImages(employee.id),
       staleTime: 30_000,
-      enabled:
-        employee.id !== null &&
-        employee.id !== undefined,
+      enabled: employee.id !== null && employee.id !== undefined,
     })),
   });
 
@@ -194,8 +167,7 @@ export default function Faces() {
      UPLOAD MUTATION
   ======================================================= */
 
-  const uploadMutation =
-  useUploadEmployeeFaceImages({
+  const uploadMutation = useUploadEmployeeFaceImages({
     onSuccess: () => {
       toast.success(
         modalMode === "register"
@@ -207,9 +179,7 @@ export default function Faces() {
     },
 
     onError: (error) => {
-      const message =
-        error?.message ||
-        "Không thể upload ảnh khuôn mặt.";
+      const message = error?.message || "Không thể upload ảnh khuôn mặt.";
 
       setSubmitError(message);
 
@@ -226,76 +196,48 @@ export default function Faces() {
       .map((employee, index) => {
         const query = faceQueries[index];
 
-        const images =
-          query?.data ?? [];
+        const images = query?.data ?? [];
 
-        const latestImage =
-          [...images]
-            .sort((a, b) => {
-              const aTime = a.createdAt
-                ? new Date(a.createdAt).getTime()
-                : 0;
+        const latestImage = [...images].sort((a, b) => {
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
 
-              const bTime = b.createdAt
-                ? new Date(b.createdAt).getTime()
-                : 0;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
 
-              return bTime - aTime;
-            })[0];
+          return bTime - aTime;
+        })[0];
 
         const status: FaceStatus =
-          images.length > 0
-            ? "registered"
-            : "not_registered";
+          images.length > 0 ? "registered" : "not_registered";
 
         return {
           employee,
           images,
           status,
-          updatedAt:
-            latestImage?.createdAt ??
-            null,
-          deviceId:
-            devices[0]?.id ??
-            null,
+          updatedAt: latestImage?.createdAt ?? null,
+          deviceId: devices[0]?.id ?? null,
         };
       })
       .filter((record) => {
-        const keyword =
-          search.trim().toLowerCase();
+        const keyword = search.trim().toLowerCase();
 
         if (!keyword) {
           return true;
         }
 
-        const name =
-          getEmployeeName(record.employee)
-            .toLowerCase();
+        const name = getEmployeeName(record.employee).toLowerCase();
 
-        const code =
-          getEmployeeCode(record.employee)
-            .toLowerCase();
+        const code = getEmployeeCode(record.employee).toLowerCase();
 
-        return (
-          name.includes(keyword) ||
-          code.includes(keyword)
-        );
+        return name.includes(keyword) || code.includes(keyword);
       })
       .filter((record) => {
         if (filterStatus === "all") {
           return true;
         }
 
-        return (
-          record.status === filterStatus
-        );
+        return record.status === filterStatus;
       });
-  }, [
-    employees,
-    faceQueries,
-    search,
-    filterStatus,
-  ]);
+  }, [employees, faceQueries, search, filterStatus]);
 
   /* =======================================================
      SELECTED EMPLOYEE
@@ -307,43 +249,29 @@ export default function Faces() {
     }
 
     return employees.find(
-      (employee) =>
-        String(employee.id) ===
-        String(form.employeeId),
+      (employee) => String(employee.id) === String(form.employeeId),
     );
-  }, [
-    employees,
-    form.employeeId,
-  ]);
+  }, [employees, form.employeeId]);
 
   /* =======================================================
      SELECTED EMPLOYEE FACE IMAGES
   ======================================================= */
 
-  const selectedFaceQuery =
-    useEmployeeFaceImages(
-      selectedEmployeeId,
-      {
-        enabled:
-          modalMode !== null &&
-          selectedEmployeeId !== null,
-      },
-    );
+  const selectedFaceQuery = useEmployeeFaceImages(selectedEmployeeId, {
+    enabled: modalMode !== null && selectedEmployeeId !== null,
+  });
 
   /* =======================================================
      STATUS CONFIG
   ======================================================= */
 
-  const getStatusConfig = (
-    status: FaceStatus,
-  ) => {
+  const getStatusConfig = (status: FaceStatus) => {
     switch (status) {
       case "registered":
         return {
           label: "Đã đăng ký",
           icon: ShieldCheck,
-          className:
-            "text-emerald-600 bg-emerald-50 border-emerald-100",
+          className: "text-emerald-600 bg-emerald-50 border-emerald-100",
         };
 
       case "not_registered":
@@ -351,8 +279,7 @@ export default function Faces() {
         return {
           label: "Chưa đăng ký",
           icon: AlertCircle,
-          className:
-            "text-amber-600 bg-amber-50 border-amber-100",
+          className: "text-amber-600 bg-amber-50 border-amber-100",
         };
     }
   };
@@ -361,28 +288,20 @@ export default function Faces() {
      OPEN REGISTER
   ======================================================= */
 
-  function handleOpenRegister(
-    employeeId?: number | string,
-  ) {
+  function handleOpenRegister(employeeId?: number | string) {
     if (employeeId !== undefined) {
       setSelectedEmployeeId(employeeId);
       setForm({
         ...emptyForm,
         employeeId: String(employeeId),
-        deviceId:
-          devices[0]?.id
-            ? String(devices[0].id)
-            : "",
+        deviceId: devices[0]?.id ? String(devices[0].id) : "",
       });
     } else {
       setSelectedEmployeeId(null);
       setForm({
         ...emptyForm,
         employeeId: "",
-        deviceId:
-          devices[0]?.id
-            ? String(devices[0].id)
-            : "",
+        deviceId: devices[0]?.id ? String(devices[0].id) : "",
       });
     }
 
@@ -394,27 +313,17 @@ export default function Faces() {
      OPEN UPDATE
   ======================================================= */
 
-  function handleOpenUpdate(
-    employeeId: number | string,
-  ) {
+  function handleOpenUpdate(employeeId: number | string) {
     setSelectedEmployeeId(employeeId);
 
-    const employee =
-      employees.find(
-        (item) =>
-          String(item.id) ===
-          String(employeeId),
-      );
+    const employee = employees.find(
+      (item) => String(item.id) === String(employeeId),
+    );
 
     setForm({
       ...emptyForm,
-      employeeId: String(
-        employee?.id ?? employeeId,
-      ),
-      deviceId:
-        devices[0]?.id
-          ? String(devices[0].id)
-          : "",
+      employeeId: String(employee?.id ?? employeeId),
+      deviceId: devices[0]?.id ? String(devices[0].id) : "",
     });
 
     setSubmitError("");
@@ -425,17 +334,12 @@ export default function Faces() {
      OPEN INFO
   ======================================================= */
 
-  function handleOpenInfo(
-    employeeId: number | string,
-  ) {
+  function handleOpenInfo(employeeId: number | string) {
     setSelectedEmployeeId(employeeId);
     setForm({
       ...emptyForm,
       employeeId: String(employeeId),
-      deviceId:
-        devices[0]?.id
-          ? String(devices[0].id)
-          : "",
+      deviceId: devices[0]?.id ? String(devices[0].id) : "",
     });
     setSubmitError("");
     setModalMode("info");
@@ -446,28 +350,19 @@ export default function Faces() {
   ======================================================= */
 
   useEffect(() => {
-    if (
-      modalMode !== "update" ||
-      !selectedEmployeeId
-    ) {
+    if (modalMode !== "update" || !selectedEmployeeId) {
       return;
     }
 
-    if (
-      selectedFaceQuery.isLoading ||
-      !selectedFaceQuery.data
-    ) {
+    if (selectedFaceQuery.isLoading || !selectedFaceQuery.data) {
       return;
     }
 
-    const images =
-      selectedFaceQuery.data;
+    const images = selectedFaceQuery.data;
 
     setForm((prev) => ({
       ...prev,
-      previews: images.map(
-        (image) => image.imageUrl,
-      ),
+      previews: images.map((image) => image.imageUrl),
       files: [],
     }));
   }, [
@@ -502,29 +397,23 @@ export default function Faces() {
 
   async function startCamera() {
     try {
-      if (
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia
-      ) {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         toast.error("Trình duyệt không hỗ trợ camera.");
         return;
       }
 
-      const stream =
-        await navigator.mediaDevices.getUserMedia(
-          {
-            video: {
-              facingMode: "user",
-              width: {
-                ideal: 1280,
-              },
-              height: {
-                ideal: 720,
-              },
-            },
-            audio: false,
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: {
+            ideal: 1280,
           },
-        );
+          height: {
+            ideal: 720,
+          },
+        },
+        audio: false,
+      });
 
       streamRef.current = stream;
 
@@ -532,8 +421,7 @@ export default function Faces() {
 
       requestAnimationFrame(() => {
         if (videoRef.current) {
-          videoRef.current.srcObject =
-            stream;
+          videoRef.current.srcObject = stream;
         }
       });
     } catch (error) {
@@ -549,11 +437,9 @@ export default function Faces() {
 
   function stopCamera() {
     if (streamRef.current) {
-      streamRef.current
-        .getTracks()
-        .forEach((track) => {
-          track.stop();
-        });
+      streamRef.current.getTracks().forEach((track) => {
+        track.stop();
+      });
 
       streamRef.current = null;
     }
@@ -565,342 +451,215 @@ export default function Faces() {
      CAPTURE CAMERA
   ======================================================= */
 
- function capturePhoto() {
-  const video = videoRef.current;
+  function capturePhoto() {
+    const video = videoRef.current;
 
-  if (!video) {
-    toast.error("Camera chưa sẵn sàng.");
-    return;
-  }
+    if (!video) {
+      toast.error("Camera chưa sẵn sàng.");
+      return;
+    }
 
-  if (form.previews.length >= MAX_FACE_IMAGES) {
-    toast.error(
-      `Đã đạt tối đa ${MAX_FACE_IMAGES} ảnh khuôn mặt.`,
-      {
+    if (form.previews.length >= MAX_FACE_IMAGES) {
+      toast.error(`Đã đạt tối đa ${MAX_FACE_IMAGES} ảnh khuôn mặt.`, {
         id: "face-max-images",
-      },
-    );
-
-    stopCamera();
-    return;
-  }
-
-  if (
-    video.videoWidth === 0 ||
-    video.videoHeight === 0
-  ) {
-    toast.error(
-      "Camera chưa nhận được hình ảnh. Vui lòng thử lại.",
-    );
-
-    return;
-  }
-
-  const canvas =
-    document.createElement("canvas");
-
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-
-  const context =
-    canvas.getContext("2d");
-
-  if (!context) {
-    toast.error(
-      "Không thể chụp ảnh từ camera.",
-    );
-
-    return;
-  }
-
-  context.drawImage(
-    video,
-    0,
-    0,
-    canvas.width,
-    canvas.height,
-  );
-
-  const preview = canvas.toDataURL(
-    "image/jpeg",
-    0.9,
-  );
-
-  canvas.toBlob(
-    (blob) => {
-      if (!blob) {
-        toast.error(
-          "Không thể tạo ảnh từ camera.",
-        );
-
-        return;
-      }
-
-      const file = new File(
-        [blob],
-        `face-${Date.now()}.jpg`,
-        {
-          type: "image/jpeg",
-        },
-      );
-
-      setForm((prev) => {
-        if (
-          prev.previews.length >=
-          MAX_FACE_IMAGES
-        ) {
-          toast.error(
-            `Đã đạt tối đa ${MAX_FACE_IMAGES} ảnh khuôn mặt.`,
-            {
-              id: "face-max-images",
-            },
-          );
-
-          return prev;
-        }
-
-        return {
-          ...prev,
-          files: [
-            ...prev.files,
-            file,
-          ],
-          previews: [
-            ...prev.previews,
-            preview,
-          ],
-        };
       });
 
-      toast.success(
-        "Đã chụp ảnh khuôn mặt.",
-      );
-
       stopCamera();
-    },
-    "image/jpeg",
-    0.9,
-  );
-}
+      return;
+    }
+
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      toast.error("Camera chưa nhận được hình ảnh. Vui lòng thử lại.");
+
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      toast.error("Không thể chụp ảnh từ camera.");
+
+      return;
+    }
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const preview = canvas.toDataURL("image/jpeg", 0.9);
+
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          toast.error("Không thể tạo ảnh từ camera.");
+
+          return;
+        }
+
+        const file = new File([blob], `face-${Date.now()}.jpg`, {
+          type: "image/jpeg",
+        });
+
+        setForm((prev) => {
+          if (prev.previews.length >= MAX_FACE_IMAGES) {
+            toast.error(`Đã đạt tối đa ${MAX_FACE_IMAGES} ảnh khuôn mặt.`, {
+              id: "face-max-images",
+            });
+
+            return prev;
+          }
+
+          return {
+            ...prev,
+            files: [...prev.files, file],
+            previews: [...prev.previews, preview],
+          };
+        });
+
+        toast.success("Đã chụp ảnh khuôn mặt.");
+
+        stopCamera();
+      },
+      "image/jpeg",
+      0.9,
+    );
+  }
 
   /* =======================================================
      UPLOAD IMAGE
   ======================================================= */
 
   function handleUploadImages(fileList: FileList | null) {
-  if (!fileList) return;
+    if (!fileList) return;
 
-  const selectedFiles = Array.from(fileList);
+    const selectedFiles = Array.from(fileList);
 
-  if (selectedFiles.length === 0) {
-    return;
-  }
+    if (selectedFiles.length === 0) {
+      return;
+    }
 
-  const currentCount = form.previews.length;
+    const currentCount = form.previews.length;
 
-  // Đã đủ 9 ảnh
-  if (currentCount >= MAX_FACE_IMAGES) {
-    toast.error(
-      `Đã đạt tối đa ${MAX_FACE_IMAGES} ảnh khuôn mặt.`,
-      {
+    // Đã đủ 10 ảnh
+    if (currentCount >= MAX_FACE_IMAGES) {
+      toast.error(`Đã đạt tối đa ${MAX_FACE_IMAGES} ảnh khuôn mặt.`, {
         id: "face-max-images",
-      },
+      });
+
+      return;
+    }
+
+    const remainingSlots = MAX_FACE_IMAGES - currentCount;
+
+    // Người dùng chọn quá số lượng còn lại
+    if (selectedFiles.length > remainingSlots) {
+      toast.error(
+        `Chỉ có thể thêm ${remainingSlots} ảnh nữa. Tối đa ${MAX_FACE_IMAGES} ảnh.`,
+        {
+          id: "face-max-images",
+        },
+      );
+
+      selectedFiles.splice(remainingSlots);
+    }
+
+    if (selectedFiles.length === 0) {
+      return;
+    }
+
+    // Validate type
+    const invalidFile = selectedFiles.find(
+      (file) => !file.type.startsWith("image/"),
     );
 
-    return;
-  }
+    if (invalidFile) {
+      toast.error(`"${invalidFile.name}" không phải là file hình ảnh.`);
 
-  const remainingSlots =
-    MAX_FACE_IMAGES - currentCount;
+      return;
+    }
 
-  // Người dùng chọn quá số lượng còn lại
-  if (selectedFiles.length > remainingSlots) {
-    toast.error(
-      `Chỉ có thể thêm ${remainingSlots} ảnh nữa. Tối đa ${MAX_FACE_IMAGES} ảnh.`,
-      {
-        id: "face-max-images",
-      },
+    // Validate size
+    const oversizedFile = selectedFiles.find(
+      (file) => file.size > MAX_FILE_SIZE,
     );
 
-    selectedFiles.splice(remainingSlots);
+    if (oversizedFile) {
+      toast.error(`"${oversizedFile.name}" vượt quá giới hạn 5MB.`);
+
+      return;
+    }
+
+    const previews = selectedFiles.map((file) => URL.createObjectURL(file));
+
+    setForm((prev) => ({
+      ...prev,
+      files: [...prev.files, ...selectedFiles],
+      previews: [...prev.previews, ...previews],
+    }));
+
+    toast.success(`Đã thêm ${selectedFiles.length} ảnh khuôn mặt.`);
   }
-
-  if (selectedFiles.length === 0) {
-    return;
-  }
-
-  // Validate type
-  const invalidFile = selectedFiles.find(
-    (file) => !file.type.startsWith("image/"),
-  );
-
-  if (invalidFile) {
-    toast.error(
-      `"${invalidFile.name}" không phải là file hình ảnh.`,
-    );
-
-    return;
-  }
-
-  // Validate size
-  const oversizedFile = selectedFiles.find(
-    (file) => file.size > MAX_FILE_SIZE,
-  );
-
-  if (oversizedFile) {
-    toast.error(
-      `"${oversizedFile.name}" vượt quá giới hạn 5MB.`,
-    );
-
-    return;
-  }
-
-  const previews = selectedFiles.map((file) =>
-    URL.createObjectURL(file),
-  );
-
-  setForm((prev) => ({
-    ...prev,
-    files: [
-      ...prev.files,
-      ...selectedFiles,
-    ],
-    previews: [
-      ...prev.previews,
-      ...previews,
-    ],
-  }));
-
-  toast.success(
-    `Đã thêm ${selectedFiles.length} ảnh khuôn mặt.`,
-  );
-}
 
   /* =======================================================
      REMOVE SELECTED PREVIEW
   ======================================================= */
 
-  function handleRemovePreview(
-  index: number,
-) {
-  setForm((prev) => {
-    const preview =
-      prev.previews[index];
+  function handleRemovePreview(index: number) {
+    setForm((prev) => {
+      const preview = prev.previews[index];
 
-    if (
-      preview?.startsWith("blob:")
-    ) {
-      URL.revokeObjectURL(preview);
-    }
+      if (preview?.startsWith("blob:")) {
+        URL.revokeObjectURL(preview);
+      }
 
-    const newPreviews =
-      prev.previews.filter(
-        (_, itemIndex) =>
-          itemIndex !== index,
+      const newPreviews = prev.previews.filter(
+        (_, itemIndex) => itemIndex !== index,
       );
 
-    /*
-     * Chỉ preview blob mới tương ứng với file mới.
-     *
-     * Existing image từ API không có trong files.
-     *
-     * Vì vậy xác định vị trí file bằng cách
-     * đếm số blob trước index.
-     */
-    const blobIndex =
-      prev.previews
+      /*
+       * Chỉ preview blob mới tương ứng với file mới.
+       *
+       * Existing image từ API không có trong files.
+       *
+       * Vì vậy xác định vị trí file bằng cách
+       * đếm số blob trước index.
+       */
+      const blobIndex = prev.previews
         .slice(0, index)
-        .filter((item) =>
-          item.startsWith("blob:"),
-        ).length;
+        .filter((item) => item.startsWith("blob:")).length;
 
-    const isNewFile =
-      preview?.startsWith("blob:");
+      const isNewFile = preview?.startsWith("blob:");
 
-    let newFiles = prev.files;
+      let newFiles = prev.files;
 
-    if (isNewFile) {
-      newFiles =
-        prev.files.filter(
-          (_, fileIndex) =>
-            fileIndex !== blobIndex,
-        );
-    }
+      if (isNewFile) {
+        newFiles = prev.files.filter((_, fileIndex) => fileIndex !== blobIndex);
+      }
 
-    return {
-      ...prev,
-      previews: newPreviews,
-      files: newFiles,
-    };
-  });
+      return {
+        ...prev,
+        previews: newPreviews,
+        files: newFiles,
+      };
+    });
 
-  toast.success("Đã xóa ảnh khỏi danh sách review.");
-}
+    toast.success("Đã xóa ảnh khỏi danh sách review.");
+  }
 
   /* =======================================================
      SUBMIT
   ======================================================= */
 
-  async function handleSubmit(
-  event: React.FormEvent<HTMLFormElement>,
-) {
-  event.preventDefault();
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-  setSubmitError("");
+    setSubmitError("");
 
-  if (!form.employeeId) {
-    const message =
-      "Vui lòng chọn nhân viên.";
-
-    setSubmitError(message);
-    toast.error(message);
-
-    return;
-  }
-
-  if (!form.deviceId) {
-    const message =
-      "Vui lòng chọn thiết bị lấy mẫu.";
-
-    setSubmitError(message);
-    toast.error(message);
-
-    return;
-  }
-
-  // Không được quá 9 ảnh review
-  if (
-    form.previews.length >
-    MAX_FACE_IMAGES
-  ) {
-    const message =
-      `Chỉ được tối đa ${MAX_FACE_IMAGES} ảnh khuôn mặt.`;
-
-    setSubmitError(message);
-    toast.error(message);
-
-    return;
-  }
-
-  // REGISTER bắt buộc phải có ảnh
-  if (modalMode === "register") {
-    if (form.files.length === 0) {
-      const message =
-        "Vui lòng chụp hoặc tải ít nhất 1 ảnh khuôn mặt.";
-
-      setSubmitError(message);
-      toast.error(message);
-
-      return;
-    }
-  }
-
-  // UPDATE
-  if (modalMode === "update") {
-    // Không còn ảnh
-    if (form.previews.length === 0) {
-      const message =
-        "Vui lòng giữ lại ít nhất 1 ảnh khuôn mặt.";
+    if (!form.employeeId) {
+      const message = "Vui lòng chọn nhân viên.";
 
       setSubmitError(message);
       toast.error(message);
@@ -908,39 +667,76 @@ export default function Faces() {
       return;
     }
 
-    // Không có ảnh mới
-    if (form.files.length === 0) {
-      toast.success(
-        "Không có ảnh mới cần cập nhật.",
-      );
+    if (!form.deviceId) {
+      const message = "Vui lòng chọn thiết bị lấy mẫu.";
 
-      handleCloseModal();
+      setSubmitError(message);
+      toast.error(message);
+
       return;
     }
+
+    // Không được quá 10 ảnh review
+    if (form.previews.length > MAX_FACE_IMAGES) {
+      const message = `Chỉ được tối đa ${MAX_FACE_IMAGES} ảnh khuôn mặt.`;
+
+      setSubmitError(message);
+      toast.error(message);
+
+      return;
+    }
+
+    // REGISTER bắt buộc phải có ảnh
+    if (modalMode === "register") {
+      if (form.files.length === 0) {
+        const message = "Vui lòng chụp hoặc tải ít nhất 1 ảnh khuôn mặt.";
+
+        setSubmitError(message);
+        toast.error(message);
+
+        return;
+      }
+    }
+
+    // UPDATE
+    if (modalMode === "update") {
+      // Không còn ảnh
+      if (form.previews.length === 0) {
+        const message = "Vui lòng giữ lại ít nhất 1 ảnh khuôn mặt.";
+
+        setSubmitError(message);
+        toast.error(message);
+
+        return;
+      }
+
+      // Không có ảnh mới
+      if (form.files.length === 0) {
+        toast.success("Không có ảnh mới cần cập nhật.");
+
+        handleCloseModal();
+        return;
+      }
+    }
+
+    if (form.files.length > MAX_FACE_IMAGES) {
+      const message = `Chỉ được upload tối đa ${MAX_FACE_IMAGES} ảnh.`;
+
+      setSubmitError(message);
+      toast.error(message);
+
+      return;
+    }
+
+    try {
+      await uploadMutation.mutateAsync({
+        employeeId: form.employeeId,
+        files: form.files,
+      });
+    } catch {
+      // onError của mutation đã xử lý toast
+    }
   }
-
-  if (
-    form.files.length >
-    MAX_FACE_IMAGES
-  ) {
-    const message =
-      `Chỉ được upload tối đa ${MAX_FACE_IMAGES} ảnh.`;
-
-    setSubmitError(message);
-    toast.error(message);
-
-    return;
-  }
-
-  try {
-    await uploadMutation.mutateAsync({
-      employeeId: form.employeeId,
-      files: form.files,
-    });
-  } catch {
-    // onError của mutation đã xử lý toast
-  }
-}
 
   /* =======================================================
      CLEAN CAMERA
@@ -949,24 +745,14 @@ export default function Faces() {
   useEffect(() => {
     return () => {
       if (streamRef.current) {
-        streamRef.current
-          .getTracks()
-          .forEach((track) =>
-            track.stop(),
-          );
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
 
-      form.previews.forEach(
-        (preview) => {
-          if (
-            preview.startsWith("blob:")
-          ) {
-            URL.revokeObjectURL(
-              preview,
-            );
-          }
-        },
-      );
+      form.previews.forEach((preview) => {
+        if (preview.startsWith("blob:")) {
+          URL.revokeObjectURL(preview);
+        }
+      });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -1002,8 +788,7 @@ export default function Faces() {
             </h3>
 
             <p className="mt-1 text-xs text-red-600">
-              {employeesError?.message ||
-                "Đã xảy ra lỗi khi gọi API."}
+              {employeesError?.message || "Đã xảy ra lỗi khi gọi API."}
             </p>
           </div>
         </div>
@@ -1034,8 +819,7 @@ export default function Faces() {
               </h1>
 
               <p className="mt-0.5 text-sm text-slate-500">
-                Quản lý và cập nhật dữ liệu nhận diện
-                khuôn mặt cho nhân viên.
+                Quản lý và cập nhật dữ liệu nhận diện khuôn mặt cho nhân viên.
               </p>
             </div>
           </div>
@@ -1043,9 +827,7 @@ export default function Faces() {
 
         <button
           type="button"
-          onClick={() =>
-            handleOpenRegister()
-          }
+          onClick={() => handleOpenRegister()}
           className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700 active:scale-[0.98]"
         >
           <ScanFace className="h-4 w-4" />
@@ -1065,11 +847,7 @@ export default function Faces() {
             type="text"
             placeholder="Tìm nhân viên..."
             value={search}
-            onChange={(event) =>
-              setSearch(
-                event.target.value,
-              )
-            }
+            onChange={(event) => setSearch(event.target.value)}
             className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm outline-none transition-all focus:border-slate-300 focus:ring-2 focus:ring-slate-100"
           />
         </div>
@@ -1080,25 +858,15 @@ export default function Faces() {
           <select
             value={filterStatus}
             onChange={(event) =>
-              setFilterStatus(
-                event.target.value as
-                  | "all"
-                  | FaceStatus,
-              )
+              setFilterStatus(event.target.value as "all" | FaceStatus)
             }
             className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-9 text-sm text-slate-700 shadow-sm outline-none transition-all focus:border-slate-300 focus:ring-2 focus:ring-slate-100"
           >
-            <option value="all">
-              Tất cả trạng thái
-            </option>
+            <option value="all">Tất cả trạng thái</option>
 
-            <option value="registered">
-              Đã đăng ký
-            </option>
+            <option value="registered">Đã đăng ký</option>
 
-            <option value="not_registered">
-              Chưa đăng ký
-            </option>
+            <option value="not_registered">Chưa đăng ký</option>
           </select>
 
           <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -1142,20 +910,13 @@ export default function Faces() {
 
             <tbody className="divide-y divide-slate-100">
               {records.map((record) => {
-                const config =
-                  getStatusConfig(
-                    record.status,
-                  );
+                const config = getStatusConfig(record.status);
 
-                const Icon =
-                  config.icon;
+                const Icon = config.icon;
 
-                const firstImage =
-                  record.images[0]
-                    ?.imageUrl;
+                const firstImage = record.images[0]?.imageUrl;
 
-                const employeeId =
-                  record.employee.id;
+                const employeeId = record.employee.id;
 
                 return (
                   <tr
@@ -1169,44 +930,30 @@ export default function Faces() {
                         <div className="relative shrink-0">
                           {firstImage ? (
                             <img
-                              src={
-                                firstImage
-                              }
-                              alt={getEmployeeName(
-                                record.employee,
-                              )}
+                              src={firstImage}
+                              alt={getEmployeeName(record.employee)}
                               className="h-10 w-10 rounded-xl border border-slate-200 object-cover shadow-sm"
                             />
-                          ) : getEmployeeAvatar(
-                              record.employee,
-                            ) ? (
+                          ) : getEmployeeAvatar(record.employee) ? (
                             <img
-                              src={getEmployeeAvatar(
-                                record.employee,
-                              )}
-                              alt={getEmployeeName(
-                                record.employee,
-                              )}
+                              src={getEmployeeAvatar(record.employee)}
+                              alt={getEmployeeName(record.employee)}
                               className="h-10 w-10 rounded-xl border border-slate-200 object-cover"
                             />
                           ) : (
                             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50">
-                              <UserRound className="h-5 w-5 text-slate-400" />
+                             <UserRound className="h-5 w-5 text-slate-400" />
                             </div>
                           )}
                         </div>
 
                         <div className="min-w-0">
                           <div className="truncate text-sm font-semibold text-slate-800">
-                            {getEmployeeName(
-                              record.employee,
-                            )}
+                            {getEmployeeName(record.employee)}
                           </div>
 
                           <div className="mt-0.5 text-xs font-medium text-slate-400">
-                            {getEmployeeCode(
-                              record.employee,
-                            )}
+                            {getEmployeeDepartment(record.employee)}
                           </div>
                         </div>
                       </div>
@@ -1230,38 +977,21 @@ export default function Faces() {
                     {/* IMAGES */}
 
                     <td className="whitespace-nowrap px-6 py-4">
-                      {record.images.length >
-                      0 ? (
+                      {record.images.length > 0 ? (
                         <div className="flex items-center gap-2">
                           <div className="flex -space-x-2">
-                            {record.images
-                              .slice(0, 3)
-                              .map(
-                                (
-                                  image,
-                                  index,
-                                ) => (
-                                  <img
-                                    key={
-                                      image.id
-                                    }
-                                    src={
-                                      image.imageUrl
-                                    }
-                                    alt={`Face ${index + 1}`}
-                                    className="h-8 w-8 rounded-lg border-2 border-white object-cover shadow-sm"
-                                  />
-                                ),
-                              )}
+                            {record.images.slice(0, 3).map((image, index) => (
+                              <img
+                                key={image.id}
+                                src={image.imageUrl}
+                                alt={`Face ${index + 1}`}
+                                className="h-8 w-8 rounded-lg border-2 border-white object-cover shadow-sm"
+                              />
+                            ))}
                           </div>
 
                           <span className="text-xs font-semibold text-slate-600">
-                            {
-                              record
-                                .images
-                                .length
-                            }{" "}
-                            ảnh
+                            {record.images.length} ảnh
                           </span>
                         </div>
                       ) : (
@@ -1277,30 +1007,23 @@ export default function Faces() {
                       {record.updatedAt ? (
                         <>
                           <div className="text-sm font-medium text-slate-700">
-                            {new Date(
-                              record.updatedAt,
-                            ).toLocaleDateString(
+                            {new Date(record.updatedAt).toLocaleDateString(
                               "vi-VN",
                             )}
                           </div>
 
                           <div className="mt-0.5 text-xs text-slate-400">
-                            {new Date(
-                              record.updatedAt,
-                            ).toLocaleTimeString(
+                            {new Date(record.updatedAt).toLocaleTimeString(
                               "vi-VN",
                               {
                                 hour: "2-digit",
-                                minute:
-                                  "2-digit",
+                                minute: "2-digit",
                               },
                             )}
                           </div>
                         </>
                       ) : (
-                        <span className="text-sm text-slate-400">
-                          —
-                        </span>
+                        <span className="text-sm text-slate-400">—</span>
                       )}
                     </td>
 
@@ -1310,45 +1033,28 @@ export default function Faces() {
                       {record.deviceId &&
                       devices.find(
                         (device) =>
-                          String(
-                            device.id,
-                          ) ===
-                          String(
-                            record.deviceId,
-                          ),
+                          String(device.id) === String(record.deviceId),
                       ) ? (
                         (() => {
-                          const device =
-                            devices.find(
-                              (item) =>
-                                String(
-                                  item.id,
-                                ) ===
-                                String(
-                                  record.deviceId,
-                                ),
-                            );
+                          const device = devices.find(
+                            (item) =>
+                              String(item.id) === String(record.deviceId),
+                          );
 
                           return (
                             <>
                               <div className="text-sm font-medium text-slate-700">
-                                {
-                                  device?.name
-                                }
+                                {device?.name}
                               </div>
 
                               <div className="mt-0.5 text-xs text-slate-400">
-                                {device
-                                  ?.location ||
-                                  "—"}
+                                {device?.location || "—"}
                               </div>
                             </>
                           );
                         })()
                       ) : (
-                        <span className="text-sm text-slate-400">
-                          —
-                        </span>
+                        <span className="text-sm text-slate-400">—</span>
                       )}
                     </td>
 
@@ -1356,41 +1062,34 @@ export default function Faces() {
 
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        {record.status ===
-                        "not_registered" ? (
+                        {record.status === "not_registered" ? (
                           <button
                             type="button"
-                            onClick={() =>
-                              handleOpenRegister(
-                                employeeId,
-                              )
-                            }
+                            onClick={() => handleOpenRegister(employeeId)}
                             className="rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-600 transition-colors hover:bg-indigo-100"
                           >
                             Đăng ký
                           </button>
                         ) : (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleOpenUpdate(
-                                employeeId,
-                              )
-                            }
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
-                          >
-                            <RotateCcw className="h-3.5 w-3.5" />
-                            Cập nhật
-                          </button>
-                        )}
+                          <div className="group/tooltip relative">
+                            <button
+                              type="button"
+                              disabled
+                              onClick={() => handleOpenUpdate(employeeId)}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+                            >
+                              <RotateCcw className="h-3.5 w-3.5" />
+                              Cập nhật
+                            </button>
 
+                            <div className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-lg bg-slate-800 px-2.5 py-1.5 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity group-hover/tooltip:opacity-100">
+                              Tính năng chưa phát triển
+                            </div>
+                          </div>
+                        )}
                         <button
                           type="button"
-                          onClick={() =>
-                            handleOpenInfo(
-                              employeeId,
-                            )
-                          }
+                          onClick={() => handleOpenInfo(employeeId)}
                           className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 opacity-0 transition-all hover:bg-slate-100 hover:text-slate-700 group-hover:opacity-100 focus:opacity-100"
                         >
                           <MoreHorizontal className="h-4 w-4" />
@@ -1403,10 +1102,7 @@ export default function Faces() {
 
               {records.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-16"
-                  >
+                  <td colSpan={6} className="px-6 py-16">
                     <div className="flex flex-col items-center justify-center text-center">
                       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-50">
                         <ScanFace className="h-5 w-5 text-slate-400" />
@@ -1417,8 +1113,7 @@ export default function Faces() {
                       </h3>
 
                       <p className="mt-1 text-xs text-slate-400">
-                        Thử thay đổi từ khóa hoặc
-                        bộ lọc trạng thái.
+                        Thử thay đổi từ khóa hoặc bộ lọc trạng thái.
                       </p>
                     </div>
                   </td>
@@ -1435,10 +1130,7 @@ export default function Faces() {
 
       {modalMode && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4 backdrop-blur-[2px]">
-          <div
-            className="absolute inset-0"
-            onClick={handleCloseModal}
-          />
+          <div className="absolute inset-0" onClick={handleCloseModal} />
 
           <div className="relative z-10 w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl animate-in fade-in zoom-in duration-200">
             {/* HEADER */}
@@ -1456,16 +1148,16 @@ export default function Faces() {
                         ? "Đăng ký Face ID — Chọn nhân viên"
                         : "Đăng ký Face ID"
                       : modalMode === "update"
-                      ? "Cập nhật Face ID"
-                      : "Thông tin Face ID"}
+                        ? "Cập nhật Face ID"
+                        : "Thông tin Face ID"}
                   </h2>
 
                   <p className="mt-0.5 text-xs text-slate-400">
                     {modalMode === "info"
                       ? "Dữ liệu khuôn mặt đã đăng ký trên hệ thống."
                       : selectedEmployeeId === null
-                      ? "Chọn nhân viên từ danh sách để bắt đầu lấy mẫu khuôn mặt."
-                      : "Upload tối đa 9 ảnh khuôn mặt để hệ thống nhận diện."}
+                        ? "Chọn nhân viên từ danh sách để bắt đầu lấy mẫu khuôn mặt."
+                        : "Upload đủ 10 ảnh khuôn mặt để hệ thống nhận diện."}
                   </p>
                 </div>
               </div>
@@ -1509,13 +1201,17 @@ export default function Faces() {
                         </div>
                       </div>
 
-                      <div className={cn(
-                        "rounded-full border px-3 py-1 text-xs font-bold shadow-sm",
-                        selectedFaceQuery.data && selectedFaceQuery.data.length > 0
-                          ? "text-emerald-600 bg-emerald-50 border-emerald-100"
-                          : "text-amber-600 bg-amber-50 border-amber-100"
-                      )}>
-                        {selectedFaceQuery.data && selectedFaceQuery.data.length > 0
+                      <div
+                        className={cn(
+                          "rounded-full border px-3 py-1 text-xs font-bold shadow-sm",
+                          selectedFaceQuery.data &&
+                            selectedFaceQuery.data.length > 0
+                            ? "text-emerald-600 bg-emerald-50 border-emerald-100"
+                            : "text-amber-600 bg-amber-50 border-amber-100",
+                        )}
+                      >
+                        {selectedFaceQuery.data &&
+                        selectedFaceQuery.data.length > 0
                           ? "Đã đăng ký"
                           : "Chưa đăng ký"}
                       </div>
@@ -1528,11 +1224,12 @@ export default function Faces() {
                       <h3 className="text-sm font-semibold text-slate-700">
                         Ảnh khuôn mặt đã đăng ký
                       </h3>
-                      {selectedFaceQuery.data && selectedFaceQuery.data.length > 0 && (
-                        <span className="text-xs font-semibold text-slate-500">
-                          Tổng số: {selectedFaceQuery.data.length} ảnh
-                        </span>
-                      )}
+                      {selectedFaceQuery.data &&
+                        selectedFaceQuery.data.length > 0 && (
+                          <span className="text-xs font-semibold text-slate-500">
+                            Tổng số: {selectedFaceQuery.data.length} ảnh
+                          </span>
+                        )}
                     </div>
 
                     {selectedFaceQuery.isLoading ? (
@@ -1540,7 +1237,8 @@ export default function Faces() {
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Đang tải ảnh khuôn mặt...
                       </div>
-                    ) : selectedFaceQuery.data && selectedFaceQuery.data.length > 0 ? (
+                    ) : selectedFaceQuery.data &&
+                      selectedFaceQuery.data.length > 0 ? (
                       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                         {selectedFaceQuery.data.map((image, index) => (
                           <div
@@ -1556,8 +1254,15 @@ export default function Faces() {
                               #{index + 1}
                             </div>
                             {image.createdAt && (
-                              <div className="absolute bottom-2 left-2 right-2 rounded-md bg-black/60 p-1 text-[9px] font-medium text-white backdrop-blur-sm truncate" title={new Date(image.createdAt).toLocaleString("vi-VN")}>
-                                {new Date(image.createdAt).toLocaleDateString("vi-VN")}
+                              <div
+                                className="absolute bottom-2 left-2 right-2 rounded-md bg-black/60 p-1 text-[9px] font-medium text-white backdrop-blur-sm truncate"
+                                title={new Date(image.createdAt).toLocaleString(
+                                  "vi-VN",
+                                )}
+                              >
+                                {new Date(image.createdAt).toLocaleDateString(
+                                  "vi-VN",
+                                )}
                               </div>
                             )}
                           </div>
@@ -1582,7 +1287,8 @@ export default function Faces() {
                     Đóng
                   </button>
 
-                  {selectedFaceQuery.data && selectedFaceQuery.data.length > 0 ? (
+                  {selectedFaceQuery.data &&
+                  selectedFaceQuery.data.length > 0 ? (
                     <button
                       type="button"
                       onClick={() => {
@@ -1637,7 +1343,8 @@ export default function Faces() {
                         <option value="">Chọn nhân viên</option>
                         {employees.map((employee) => (
                           <option key={employee.id} value={employee.id}>
-                            {getEmployeeName(employee)} — {getEmployeeCode(employee)}
+                            {getEmployeeName(employee)} —{" "}
+                            {getEmployeeCode(employee)}
                           </option>
                         ))}
                       </select>
@@ -1711,7 +1418,8 @@ export default function Faces() {
                         <select
                           value={form.employeeId}
                           disabled={
-                            modalMode === "update" || selectedEmployeeId !== null
+                            modalMode === "update" ||
+                            selectedEmployeeId !== null
                           }
                           onChange={(event) => {
                             const employeeId = event.target.value;
@@ -1724,14 +1432,16 @@ export default function Faces() {
                           className={cn(
                             inputClass,
                             "appearance-none pr-10",
-                            (modalMode === "update" || selectedEmployeeId !== null) &&
+                            (modalMode === "update" ||
+                              selectedEmployeeId !== null) &&
                               "cursor-not-allowed bg-slate-50 text-slate-400",
                           )}
                         >
                           <option value="">Chọn nhân viên</option>
                           {employees.map((employee) => (
                             <option key={employee.id} value={employee.id}>
-                              {getEmployeeName(employee)} — {getEmployeeCode(employee)}
+                              {getEmployeeName(employee)} —{" "}
+                              {getEmployeeCode(employee)}
                             </option>
                           ))}
                         </select>
@@ -1897,7 +1607,9 @@ export default function Faces() {
                                     <div
                                       className={cn(
                                         "absolute bottom-2 left-2 rounded-md px-1.5 py-1 text-[9px] font-semibold text-white backdrop-blur-sm",
-                                        isNewImage ? "bg-blue-600/80" : "bg-slate-900/70",
+                                        isNewImage
+                                          ? "bg-blue-600/80"
+                                          : "bg-slate-900/70",
                                       )}
                                     >
                                       {isNewImage ? "Ảnh mới" : "Ảnh hiện tại"}
@@ -1943,7 +1655,8 @@ export default function Faces() {
                                 Chưa có dữ liệu khuôn mặt
                               </h3>
                               <p className="mt-1 max-w-sm text-xs leading-5 text-slate-400">
-                                Chụp trực tiếp bằng camera hoặc tải tối đa 9 ảnh khuôn mặt của nhân viên.
+                                Chụp trực tiếp bằng camera hoặc tải đủ 10 ảnh
+                                khuôn mặt của nhân viên.
                               </p>
                               <div className="mt-5 flex flex-wrap justify-center gap-2">
                                 <button
@@ -1982,7 +1695,9 @@ export default function Faces() {
                     />
 
                     <p className="text-[11px] leading-5 text-slate-400">
-                      Khuyến nghị sử dụng nhiều góc khuôn mặt khác nhau, đủ ánh sáng, không đeo khẩu trang hoặc che khuất khuôn mặt. Mỗi ảnh tối đa 5MB.
+                      Khuyến nghị sử dụng nhiều góc khuôn mặt khác nhau, đủ ánh
+                      sáng, không đeo khẩu trang hoặc che khuất khuôn mặt. Mỗi
+                      ảnh tối đa 5MB.
                     </p>
                   </div>
 
@@ -2005,7 +1720,9 @@ export default function Faces() {
                           Dữ liệu sẽ được xử lý bởi AI backend
                         </div>
                         <p className="mt-1 text-[11px] leading-5 text-slate-400">
-                          Sau khi upload, backend sẽ lưu các ảnh khuôn mặt và thực hiện xử lý embedding theo pipeline AI của hệ thống. Frontend không tự giả lập độ chính xác.
+                          Sau khi upload, backend sẽ lưu các ảnh khuôn mặt và
+                          thực hiện xử lý embedding theo pipeline AI của hệ
+                          thống. Frontend không tự giả lập độ chính xác.
                         </p>
                       </div>
                     </div>
@@ -2040,7 +1757,9 @@ export default function Faces() {
                     ) : (
                       <>
                         <ShieldCheck className="h-4 w-4" />
-                        {modalMode === "register" ? "Đăng ký Face ID" : "Cập nhật Face ID"}
+                        {modalMode === "register"
+                          ? "Đăng ký Face ID"
+                          : "Cập nhật Face ID"}
                       </>
                     )}
                   </button>
@@ -2072,19 +1791,11 @@ function FormField({
   return (
     <div className="space-y-2">
       <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-        {icon && (
-          <span className="text-slate-400">
-            {icon}
-          </span>
-        )}
+        {icon && <span className="text-slate-400">{icon}</span>}
 
         {label}
 
-        {required && (
-          <span className="text-red-500">
-            *
-          </span>
-        )}
+        {required && <span className="text-red-500">*</span>}
       </label>
 
       {children}
